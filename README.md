@@ -17,6 +17,6 @@ chmod +x ~/.local/bin/git-sync
 
 after that you call git-sync in the terminal
 
-_if you have fzf installed you can choose the files_
+![Home Page](img/Screenshot_git_sync.png)
 
 ---
