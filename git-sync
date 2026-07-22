@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+set -e
+
+clear
+
+echo "======================================"
+echo "          Git Sync"
+echo "======================================"
+echo
+
+git status --short
+echo
+
+# ----------------------------
+# Stage Mode
+# ----------------------------
+
+echo "Stage mode"
+
+echo "1) Stage all changes"
+echo "2) Stage interactively (git add -p)"
+
+if command -v fzf >/dev/null 2>&1; then
+    echo "3) Select files (fzf)"
+    HAS_FZF=true
+else
+    HAS_FZF=false
+fi
+
+echo
+
+read -rp "Choice: " stage
+
+case "$stage" in
+
+1)
+    git add .
+    ;;
+
+2)
+    git add -p
+    ;;
+
+3)
+    if [ "$HAS_FZF" = true ]; then
+
+        files=$(
+            git status --short \
+            | awk '{print $2}' \
+            | fzf --multi --prompt="Select files > "
+        )
+
+        if [ -z "$files" ]; then
+            echo "No files selected."
+            exit 0
+        fi
+
+        echo "$files" | while read file
+        do
+            git add "$file"
+        done
+
+    else
+        echo "fzf is not installed."
+        exit 1
+    fi
+    ;;
+
+*)
+    echo "Invalid option."
+    exit 1
+    ;;
+
+esac
+
+echo
+echo "Staged files:"
+git diff --cached --name-only
+echo
+
+# ----------------------------
+# Commit Type
+# ----------------------------
+
+echo "Commit type"
+
+echo "1) feat"
+echo "2) fix"
+echo "3) docs"
+echo "4) refactor"
+echo "5) style"
+echo "6) test"
+echo "7) chore"
+echo "8) perf"
+echo "9) ci"
+echo "10) build"
+echo "11) revert"
+echo "12) Auto"
+
+echo
+
+read -rp "Choice: " choice
+
+case "$choice" in
+
+1) type="feat" ;;
+2) type="fix" ;;
+3) type="docs" ;;
+4) type="refactor" ;;
+5) type="style" ;;
+6) type="test" ;;
+7) type="chore" ;;
+8) type="perf" ;;
+9) type="ci" ;;
+10) type="build" ;;
+11) type="revert" ;;
+
+12)
+    git commit -m "chore: update project"
+    git push
+    echo
+    echo "Done!"
+    exit 0
+    ;;
+
+*)
+    echo "Invalid option."
+    exit 1
+    ;;
+
+esac
+
+echo
+
+read -rp "Description: " description
+
+git commit -m "$type: $description"
+
+echo
+
+git push
+
+echo
+echo "Done!"
